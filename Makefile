@@ -14,10 +14,16 @@ main: $(OBJS)
 
 testall: test1 test2 test3 test4 test5
 
-run: main
-	./main inputs/input1
-
 test1: main
+	./main inputs/input1
+	
+test2: main
+	./main inputs/input2
+
+test3: main
+	./main inputs/input3
+
+shouldbetest1: main
 	./main inputs/input1 | sort | tee output1
 	diff output1 expected/expected1 | sort
 

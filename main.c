@@ -62,9 +62,8 @@ void printNamedInt(Field namedValue) {
 
 // Different print options.
 void printInt(const char * name, const char * data) {
-    long long int number = strtol(data, NULL, 10);
-    printf("%s = %lld\n", name, number);
-    fflush(stdout);
+    int number = * ((int *) data);
+    printf("%s = %d\n", name, number);
 }
 
 void printString(const char * name, const char * data) {
@@ -217,7 +216,17 @@ void indent(unsigned int depth) {
     }
 }
 
-void recurPrint(const unsigned int depth, Trees createdTrees[], Tree * tree) {
+void printNonTree(List * field, PrintType printers[], const unsigned int printersSize) {
+    for (unsigned int i = 0; i < printersSize; i++) {
+        PrintType p = printers[i];
+        if (strcmp(field -> value . type, p . type) == 0) {
+            p . printer(field -> value . name, field -> value . value);
+            break;
+        }
+    }
+}
+
+void recurPrint(const unsigned int depth, Trees createdTrees[], Tree * tree, PrintType printers[], const unsigned int printersSize) {
     List * fields = &tree -> fields;
 
     if (!fields) {
@@ -245,50 +254,16 @@ void recurPrint(const unsigned int depth, Trees createdTrees[], Tree * tree) {
             }
         }
         if (isTree) {
-            recurPrint(depth + 1, createdTrees, (Tree *) field . value);
+            recurPrint(depth + 1, createdTrees, (Tree *) field . value, printers, printersSize);
         } else {
             indent(depth + 1);
-            printString(field . name, field . value);
+            printNonTree(fields, printers, printersSize);
+            // printString(field . name, field . value);
         }
-
-        #if 0
-        // Check if the field we have is a tree.
-        Tree * mostRecent = findMostRecentName(createdTrees, tree, &fields -> value);
-        if (mostRecent) {
-            recurPrint(depth + 1, createdTrees, mostRecent);
-        } else {
-        /*
-        for (Trees * t = createdTrees; t; t = t -> next) {
-            // Find the matching name
-            if (strcmp(t -> tree -> fields . value . name, (char *) field . value) == 0) {
-                printf("recurPrint\n");
-                printf("field value as a string %s\n", (char *) field . value);
-                
-                recurPrint(depth + 1, createdTrees, (Tree *) field . value);
-
-                // Ok, we need to find what underscore came right before tree.
-                Tree * mostRecentName = findMostRecentName(createdTrees, tree, &fields -> value);
-                if (mostRecentName == NULL) {
-                    return;
-                }
-                // printf("Tree with type %s name %s\n", field . type, field . name);
-                printf("mostRecentName name %s\n", mostRecentName -> fields . value . name);
-                recurPrint(depth + 1, createdTrees, mostRecentName);
-
-                foundTree = true;
-                break;
-            }
-        }
-        if (!foundTree) {
-        */
-            indent(depth + 1);
-            printString(field . name, field . value);
-        }
-        #endif
     }
 }
 
-void print(Trees createdTrees[], Tree * tree) {
+void print(Trees createdTrees[], Tree * tree, PrintType printers[], const unsigned int printerSize) {
     /*
     printf("\ntrees: ");
     for (Trees * t = createdTrees; t; t = t -> next) {
@@ -296,7 +271,7 @@ void print(Trees createdTrees[], Tree * tree) {
     }
     printf("\n\n");
     */
-    recurPrint(0, createdTrees, tree);
+    recurPrint(0, createdTrees, tree, printers, printerSize);
 }
 
 void stringBecomeTreeMaybe(Trees * trees, List * node) {
@@ -350,7 +325,12 @@ int main(int argc, char * argv[]) {
     // testTree();
     // printFilesRead(argc, argv);
 
-    FILE * input = fopen("input1", "r");
+    if (argc != 2) {
+        printf("Needs exactly 1 argument; the file to read.\n");
+        return 1;
+    }
+
+    FILE * input = fopen(argv[1], "r");
     if (input == NULL) {
         return 1;
     }
@@ -400,14 +380,14 @@ int main(int argc, char * argv[]) {
             // CreatedTrees has a dummy stupid first pointer, to make appendTrees easier to use. Therefore the effective head is appendTrees -> next.
             // printFields(&tree . fields, printers, printersSize);
             Tree * cloned = cloneTree(&tree);
-            print(createdTrees -> next, cloned);
+            print(createdTrees -> next, cloned, printers, printersSize);
             appendTrees(createdTrees, cloned);
 
             // printList(&tree . fields);
             tree = initTree(&head, &curr);
             // printf("the initTree have the SAME addr of %p\n", (void *) &tree);
             fflush(stdout);
-            printf("\n\n\n");
+            printf("\n");
         } else {
             char * stripped = NULL;
             for (int i = 0; i < 4; i++) {
@@ -441,10 +421,42 @@ int main(int argc, char * argv[]) {
         }
     }
 
+    // Input3 has two vectors, and say we know what the "types" of the file contains. Then we can change the data in the trees 
     // Use one of the nodes for integer math.
-    Tree * found = findMhh(createdTrees -> next);
-    Tree mhh = * found;
-    mhh = mhh;
+    if (strcmp(argv[1], "inputs/input3") == 0) {
+        Tree * v1 = createdTrees -> next -> tree;
+        Tree * v2 = createdTrees -> next -> next -> tree;
+        // Add v1 into v2.
+        int x, y;
+        for (List * field = &v1 -> fields; field; field = field -> next) {
+            if (strcmp(field -> value . name, "x") == 0) {
+                x = strtol((char *) field -> value . value, NULL, 10);
+            }
+            if (strcmp(field -> value . name, "y") == 0) {
+                y = strtol((char *) field -> value . value, NULL, 10);
+            }
+        }
+        printf("x = %d, y = %d\n", x, y);
+
+        for (List * field = &v2 -> fields; field; field = field -> next) {
+            if (strcmp(field -> value . name, "x") == 0) {
+                int v2x = strtol((char *) field -> value . value, NULL, 10);
+                int sum = v2x + x;
+                printf("v2x = %d\n", sum);
+                field -> value . value = &sum;
+            }
+            if (strcmp(field -> value . name, "y") == 0) {
+                int v2y = strtol((char *) field -> value . value, NULL, 10);
+                int sum = v2y + y;
+                printf("v2y = %d\n", sum);
+                field -> value . value = &sum;
+            }
+        }
+        
+        printf("\nv1 + v2\n");
+        print(createdTrees -> next, v2, printers, printersSize);
+        printInt(v2 -> fields . next -> value . name, (char *) v2 -> fields . next -> value . value);
+    }
 
     /*
     const char * jobWageAccessor[] = { "job", "wage" };

@@ -15,7 +15,7 @@ main: $(OBJS)
 testall: test1 test2 test3 test4 test5
 
 run: main
-	./main
+	./main inputs/input1
 
 test1: main
 	./main inputs/input1 | sort | tee output1

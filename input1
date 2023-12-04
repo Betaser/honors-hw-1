@@ -1,0 +1,27 @@
+Wage _=start
+    int amount=300000
+    string frequency="yearly"
+end
+
+Job _=start
+    string title="doctor"
+    Wage wage=_
+end
+
+Person mhh=start
+    int age=47
+    Job job=_
+    Person parent=null
+end
+
+
+Job studentJob=start
+    string title="Purdue student"
+    Wage wage=null
+end
+
+Person student=start
+    int age=19
+    Job job=studentJob
+    Person parent=mhh
+end

@@ -1,35 +1,29 @@
-# ***
-# *** DO NOT modify this file 
-# ***
-
 WARNING = -Wall -Wshadow --pedantic
 ERROR = -Wvla -Werror
-GCC = gcc -std=c99 -g $(WARNING) $(ERROR) 
+GCC = gcc -std=c99 -g $(WARNING) $(ERROR)
+VAL = valgrind --tool=memcheck --leak-check=full --verbose
 
-TESTFALGS = -DTEST_ELIMINATE
-
-SRCS = main.c eliminate.c
+SRCS = main.c
 OBJS = $(SRCS:%.c=%.o)
 
-main: $(OBJS) 
-	$(GCC) $(TESTFALGS) $(OBJS) -o main
+main: $(OBJS)
+	$(GCC) $(OBJS) -o main
 
-.c.o: 
-	$(GCC) $(TESTFALGS) -c $*.c 
+.c.o:
+	$(GCC) -c $*.c
 
-testall: test1 test2 test3 
+testall: test1 test2 test3 test4 test5
+
+run: main
+	./main
 
 test1: main
-	./main 6 3 > output1
-	diff output1 expected/expected1
+	./main inputs/input1 | sort | tee output1
+	diff output1 expected/expected1 | sort
 
-test2: main
-	./main 6 4 > output2
-	diff output2 expected/expected2
 
-test3: main
-	./main 25 7 > output3
-	diff output3 expected/expected3
+testmemory: test1 test2 test3 test4 test5
+	$(VAL) ./main inputs/input1 | tee
 
-clean: # remove all machine generated files
+clean:
 	rm -f main *.o output? *~

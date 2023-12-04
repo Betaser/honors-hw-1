@@ -1,12 +1,7 @@
-_ = start
-    temperature = 72
+_ = HP
+    type = "laptop"
+    cost = 1000
 
-_2 = start
-    umbrellaColor = "red"
-
-myUmbrella = start
-    _ = start
-        temperature = 72
-    _2 = start
-        umbrellaColor = "red"
+outside = start
+    amount  = -273
 

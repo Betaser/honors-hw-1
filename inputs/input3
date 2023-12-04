@@ -1,0 +1,15 @@
+Vector v1=start
+    int x=10
+    int y=1
+end
+
+Vector v2=start
+    int x=2
+    int y=4
+end
+
+Ball ball=start
+    int height=10
+    Vector position=v1
+    int weight=100
+end

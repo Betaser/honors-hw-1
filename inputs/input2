@@ -1,0 +1,8 @@
+Computer _=HP
+    string type="laptop"
+    int cost=1000
+end
+
+Temperature outside=start
+    int amount = -273
+end

@@ -1,0 +1,10 @@
+Wage w=start
+    int amount=600000
+    string frequency="yearly"
+end
+
+Job _=start
+    string title="CEO"
+    string name="Kyle
+    Wage wage=w
+end

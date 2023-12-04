@@ -54,24 +54,15 @@ typedef struct {
     List fields;
 } Tree;
 
-// To help print stuff
-void printNamedInt(Field namedValue) {
-    // printf("<%s> %s = %d\n", namedValue . type, namedValue . name, * ((int *) (namedValue . value)));
-    printf("<%s> %s = %s\n", namedValue . type, namedValue . name, (char *) (namedValue . value));
-}
-
 // Different print options.
 void printInt(const char * name, const char * data) {
     int number = * ((int *) data);
+    // int number = strtol(data, NULL, 10);
     printf("%s = %d\n", name, number);
 }
 
 void printString(const char * name, const char * data) {
     printf("%s = %s\n", name, (char *) data);
-}
-
-void printJob(const char * name, const char * data) {
-    printf("%s = { ... }\n", name);
 }
 
 typedef struct PrintType {
@@ -99,31 +90,6 @@ void printFields(List * fields, PrintType printers[], const unsigned int printer
     }
 }
 
-
-void printList(List * list) {
-    printf("Assuming list is full of ints\n");
-    while (list) {
-        printNamedInt(list -> value);
-        list = list -> next;
-    }
-}
-
-void testTree() {
-    const int nineteen = 19;
-    Field age = { .name = "age", .value = (void *) &nineteen };
-    printNamedInt(age);
-
-    List basicStudentFields = { .value = age };
-    List job;
-    job . value = (Field) { .name = "job", .value = "Purdue student" };
-    job . next = NULL;
-    basicStudentFields . next = &job;
-
-    Tree tree = (Tree) { basicStudentFields };
-    printList(&tree . fields);
-    printf("Actually job is a string: %s\n", (char *) findField("job", &tree . fields));
-}
-
 // We can't return just a Tree tree {} because we need this to be a different pointer, when storing each tree.
 Tree initTree(List * * outHead, List * * outCurr) {
     List * list = malloc(sizeof(List));
@@ -147,15 +113,6 @@ void appendTrees(Trees * trees, Tree * tree) {
     Trees * newTrees = malloc(sizeof(Trees));
     newTrees -> tree = tree;
     newTrees -> next = NULL;
-
-    /*
-    for (Trees * curr = trees -> next; curr; curr = curr -> next) {
-        if (strcmp(curr -> tree -> fields . value . name, tree -> fields . value . name) == 0) {
-            curr -> tree = tree; 
-            return;
-        }
-    }
-    */
 
     Trees * end = trees;
     while (end -> next) {
@@ -263,13 +220,6 @@ void recurPrint(const unsigned int depth, Trees createdTrees[], Tree * tree, Pri
 }
 
 void print(Trees createdTrees[], Tree * tree, PrintType printers[], const unsigned int printerSize) {
-    /*
-    printf("\ntrees: ");
-    for (Trees * t = createdTrees; t; t = t -> next) {
-        printf("%s, ", t -> tree -> fields . value . name);
-    }
-    printf("\n\n");
-    */
     recurPrint(0, createdTrees, tree, printers, printerSize);
 }
 
@@ -321,9 +271,6 @@ void set(Trees * trees, Tree * tree, const char * accessors[], void * value) {
 */
 
 int main(int argc, char * argv[]) {
-    // testTree();
-    // printFilesRead(argc, argv);
-
     if (argc != 2) {
         printf("Needs exactly 1 argument; the file to read.\n");
         return 1;
@@ -342,7 +289,6 @@ int main(int argc, char * argv[]) {
     PrintType printers[] = {
         { .type = "string", .printer = printString },
         { .type = "int", .printer = printInt },
-        { .type = "Job", .printer = printJob }
     };
     unsigned int printersSize = sizeof(printers) / sizeof(printers[0]);
     printersSize = printersSize;
@@ -372,12 +318,6 @@ int main(int argc, char * argv[]) {
         // Print every tree we come across.
         if (strcmp(line, "end\n") == 0) {
             tree . fields = * head -> next;
-
-            // PRINT TREE
-            // Check createdTrees for a match, within a new version of printFields called print.
-
-            // CreatedTrees has a dummy stupid first pointer, to make appendTrees easier to use. Therefore the effective head is appendTrees -> next.
-            // printFields(&tree . fields, printers, printersSize);
             
             Tree * cloned = cloneTree(&tree);
             print(createdTrees -> next, cloned, printers, printersSize);
@@ -414,6 +354,12 @@ int main(int argc, char * argv[]) {
             field . type = type;
             field . name = name;
             field . value = value;
+            if (strcmp(type, "int") == 0) {
+                int number = strtol(value, NULL, 10);
+                int * numPtr = malloc(sizeof(int));
+                * numPtr = number;
+                field . value = numPtr;
+            }
 
             List * node = newList(&field);
 
@@ -425,48 +371,26 @@ int main(int argc, char * argv[]) {
         }
     }
 
-    // Input3 has two vectors, and say we know what the "types" of the file contains. Then we can change the data in the trees 
-    // Use one of the nodes for integer math.
+
+    // Input3 has a vector, and say we know what the "types" of the file contains. Then we can change the data in it.
     if (strcmp(argv[1], "inputs/input3") == 0) {
-        Tree * v1 = createdTrees -> next -> tree;
-        Tree * v2 = createdTrees -> next -> next -> tree;
-        // Add v1 into v2.
+        Tree * v = createdTrees -> next -> tree;
         int x, y;
-        for (List * field = &v1 -> fields; field; field = field -> next) {
+        for (List * field = &v -> fields; field; field = field -> next) {
             if (strcmp(field -> value . name, "x") == 0) {
-                x = strtol((char *) field -> value . value, NULL, 10);
+                x = * (int *) field -> value . value;
+                x += 19;
+                field -> value . value = &x;
             }
             if (strcmp(field -> value . name, "y") == 0) {
-                y = strtol((char *) field -> value . value, NULL, 10);
+                y = * (int *) field -> value . value;
+                y -= 2;
+                field -> value . value = &y;
             }
         }
-        printf("x = %d, y = %d\n", x, y);
 
-        for (List * field = &v2 -> fields; field; field = field -> next) {
-            if (strcmp(field -> value . name, "x") == 0) {
-                int v2x = strtol((char *) field -> value . value, NULL, 10);
-                int sum = v2x + x;
-                printf("v2x = %d\n", sum);
-                field -> value . value = &sum;
-            }
-            if (strcmp(field -> value . name, "y") == 0) {
-                int v2y = strtol((char *) field -> value . value, NULL, 10);
-                int sum = v2y + y;
-                printf("v2y = %d\n", sum);
-                field -> value . value = &sum;
-            }
-        }
-        
-        printf("\nv1 + v2\n");
-        print(createdTrees -> next, v2, printers, printersSize);
-        printInt(v2 -> fields . next -> value . name, (char *) v2 -> fields . next -> value . value);
+        print(createdTrees -> next, v, printers, printersSize);
     }
-
-    /*
-    const char * jobWageAccessor[] = { "job", "wage" };
-    set(createdTrees -> next, &mhh, jobWageAccessor, * ((int *) get(&mhh, jobWageAccessor)) + 5);
-    printf("%d\n", * ((int *) get(&mhh, jobWageAccessor)));
-    */
 
     // Free memory, not quite right right now.
     for (Trees * t = createdTrees; t;) {

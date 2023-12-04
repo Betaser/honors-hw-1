@@ -1,12 +1,12 @@
 _ = start
-    temperature = 12855
+    temperature = 72
 
 _2 = start
     umbrellaColor = "red"
 
 myUmbrella = start
     _ = start
-        temperature = 12855
+        temperature = 72
     _2 = start
         umbrellaColor = "red"
 

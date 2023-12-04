@@ -1,19 +1,19 @@
 _ = start
-    amount = 808464435
+    amount = 300000
     frequency = "yearly"
 
 _ = start
     title = "doctor"
     _ = start
-        amount = 808464435
+        amount = 300000
         frequency = "yearly"
 
 mhh = start
-    age = 14132
+    age = 47
     _ = start
         title = "doctor"
         _ = start
-            amount = 808464435
+            amount = 47
             frequency = "yearly"
     parent is null
 
@@ -22,16 +22,16 @@ studentJob = start
     wage is null
 
 student = start
-    age = 14641
+    age = 19
     studentJob = start
         title = "Purdue student"
         wage is null
     mhh = start
-        age = 14132
+        age = 19
         _ = start
             title = "doctor"
             _ = start
-                amount = 808464435
+                amount = 19
                 frequency = "yearly"
         parent is null
 

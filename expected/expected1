@@ -1,6 +1,37 @@
-2
-5
-3
-1
-4
-0
+_ = start
+    amount = 808464435
+    frequency = "yearly"
+
+_ = start
+    title = "doctor"
+    _ = start
+        amount = 808464435
+        frequency = "yearly"
+
+mhh = start
+    age = 14132
+    _ = start
+        title = "doctor"
+        _ = start
+            amount = 808464435
+            frequency = "yearly"
+    parent is null
+
+studentJob = start
+    title = "Purdue student"
+    wage is null
+
+student = start
+    age = 14641
+    studentJob = start
+        title = "Purdue student"
+        wage is null
+    mhh = start
+        age = 14132
+        _ = start
+            title = "doctor"
+            _ = start
+                amount = 808464435
+                frequency = "yearly"
+        parent is null
+

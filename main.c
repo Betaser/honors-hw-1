@@ -176,7 +176,6 @@ Tree * cloneTree(Tree * tree) {
     List * newFields = malloc(sizeof(List));
     List * head = newFields;
     for (List * list = &tree -> fields; list; list = list -> next) {
-        // MAYBE MALLOC IT
         Field field;
         field . type = list -> value . type;
         field . name = list -> value . name;
@@ -379,14 +378,19 @@ int main(int argc, char * argv[]) {
 
             // CreatedTrees has a dummy stupid first pointer, to make appendTrees easier to use. Therefore the effective head is appendTrees -> next.
             // printFields(&tree . fields, printers, printersSize);
+            
             Tree * cloned = cloneTree(&tree);
             print(createdTrees -> next, cloned, printers, printersSize);
             appendTrees(createdTrees, cloned);
 
-            // printList(&tree . fields);
+            // Free head and curr
+            for (List * node = head; node;) {
+                List * at = node;
+                node = node -> next;
+                free(at);
+            }
+
             tree = initTree(&head, &curr);
-            // printf("the initTree have the SAME addr of %p\n", (void *) &tree);
-            fflush(stdout);
             printf("\n");
         } else {
             char * stripped = NULL;
@@ -406,12 +410,12 @@ int main(int argc, char * argv[]) {
             char * name = strtok(NULL, "=");
             char * value = strtok(NULL, "\n");
 
-            Field * field = malloc(sizeof(Field));
-            field -> type = type;
-            field -> name = name;
-            field -> value = value;
+            Field field;
+            field . type = type;
+            field . name = name;
+            field . value = value;
 
-            List * node = newList(field);
+            List * node = newList(&field);
 
             // But, field -> value could be a reference to another tree.
             stringBecomeTreeMaybe(createdTrees -> next, node);
@@ -463,6 +467,29 @@ int main(int argc, char * argv[]) {
     set(createdTrees -> next, &mhh, jobWageAccessor, * ((int *) get(&mhh, jobWageAccessor)) + 5);
     printf("%d\n", * ((int *) get(&mhh, jobWageAccessor)));
     */
+
+    // Free memory, not quite right right now.
+    for (Trees * t = createdTrees; t;) {
+        Trees * at = t;
+        t = t -> next;
+
+        for (List * field = &at -> tree -> fields; field;) {
+            List * f = field;
+            field = field -> next;
+            /*
+            free((char *) f -> value . name);
+            free((char *) f -> value . type);
+            free(f -> value . value);
+            */
+            free(f);
+        }
+
+        free(at -> tree);
+
+        free(at);
+    }
+
+    free(head);
 
     fclose(input);
 }
